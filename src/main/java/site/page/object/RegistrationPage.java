@@ -1,6 +1,8 @@
 package site.page.object;
 
+import io.qameta.allure.Step;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -9,8 +11,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Instant;
 
 public class RegistrationPage extends BasePage {
+    private final WebDriverWait wait;
     public RegistrationPage(WebDriver driver) {
         super(driver);
+        this.wait = new WebDriverWait(driver, 10);
     }
 
     private final By logInAccountButton = By.xpath("//button[@class='button_button__33qZ0 button_button_type_primary__1O7Bx button_button_size_large__G21Vg']");
@@ -22,7 +26,8 @@ public class RegistrationPage extends BasePage {
     private final By afterSuccessfulRegistration = By.xpath("//div[@class='Auth_login__3hAey']");
     private final By messageAboutError = By.xpath("//p[@class='input__error text_type_main-default']");
 
-    public void successfulRegistrationUser(WebDriverWait wait, String email, String name, String password) {
+    @Step("Регистрация пользователя")
+    public void successfulRegistrationUser(String email, String name, String password) {
         WebElement logInAccountButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(logInAccountButton));
         logInAccountButtonLocator.click();
         WebElement registrationButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(registrationButton));
@@ -33,18 +38,25 @@ public class RegistrationPage extends BasePage {
         driver.findElement(passwordInput).sendKeys(password);
         driver.findElement(registrationButtonSecond).click();
 
-
     }
 
-    public void incorrectPasswordError(WebDriverWait wait, String email, String name, String passwordE) {
-        WebElement logInAccountButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(logInAccountButton));
-        logInAccountButtonLocator.click();
-        WebElement registrationButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(registrationButton));
-        registrationButtonLocator.click();
+    @Step("Подтверждение регистрация пользователя")
+    public boolean afterSuccessfulRegistration() {
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(afterSuccessfulRegistration));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
 
-        driver.findElement(nameInput).sendKeys(name);
-        driver.findElement(emailInput).sendKeys(email);
-        driver.findElement(passwordInput).sendKeys(passwordE);
-        driver.findElement(registrationButtonSecond).click();
+    @Step("Ошибка при регистрация пользователя с неверным логином")
+    public boolean messageAboutError() {
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(messageAboutError));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 }

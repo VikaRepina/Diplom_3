@@ -2,6 +2,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Description;
 import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,54 +14,63 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import site.page.object.DesignerPage;
-import site.page.object.HomePage;
-import site.page.object.LoginPage;
+import site.page.object.*;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-@RunWith(Parameterized.class)
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+
 public class DesignerTest {
     private WebDriver driver;
     private DesignerPage designerPage;
     private LoginPage loginPage;
-    private String browser;
+    private static String browser;
 
-    private static final String email = "tedetugr-data@yandex.ru";
-    private static final String password = "gsysydh";
-
-    public DesignerTest(String browser) {
-        this.browser = browser;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "chrome" },
-                { "yandex" }
-        });
-    }
+    private static final String email = "tedetugre-data@yandex.ru";
+    private static final String password = "gsysreydh";
+    private static final String name = "useeeeeeerrr";
+    private String Token;
 
 
     @Before
     @Step("Настройка драйвера")
     public void setup() {
-        if (browser.equals("chrome")) {
-            WebDriverManager.chromedriver().setup();
-            driver = new ChromeDriver();
-        } else if (browser.equals("yandex")) {
-            WebDriverManager.chromedriver().setup();
-            ChromeOptions options = new ChromeOptions();
-            options.setBinary("C:/Users/Виктория/AppData/Local/Yandex/YandexBrowser/Application/browser.exe"); // Укажите правильный путь к Yandex Browser
-            driver = new ChromeDriver(options);
+
+        browser = System.getenv("BROWSER");
+        if (browser == null || browser.isEmpty()) {
+            browser = "chrome";
         }
+
+        User user = new User(name, email, password);
+        LoginApi loginApi = new LoginApi();
+        Response response = loginApi.createUser(user);response.then().statusCode(200);
+        Token = response.jsonPath().get("accessToken");
+
+        switch (browser.toLowerCase()) {
+            case "chrome":
+                WebDriverManager.chromedriver().setup();
+                driver = new ChromeDriver();
+                break;
+            case "yandex":
+                WebDriverManager.chromedriver().setup();
+                ChromeOptions options = new ChromeOptions();
+                options.setBinary("C:/Users/Виктория/AppData/Local/Yandex/YandexBrowser/Application/browser.exe");
+                driver = new ChromeDriver(options);
+                break;
+            default:
+                throw new IllegalArgumentException("Неподдерживаемый браузер: " + browser);
+        }
+
         driver.get("https://stellarburgers.nomoreparties.site/");
         designerPage = new DesignerPage(driver);
         loginPage = new LoginPage(driver);
 
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        loginPage.logInThroughLoginAccountButton(wait, email, password);
+        loginPage.logInThroughLoginAccountButton(email, password);
+
     }
 
     @After
@@ -69,6 +79,10 @@ public class DesignerTest {
         if (driver != null) {
             driver.quit();
         }
+
+        LoginApi loginApi = new LoginApi();
+        Response responseSecond = loginApi.deleteUser(Token);
+        responseSecond.then().statusCode(202);
     }
 
     @Test
@@ -77,10 +91,12 @@ public class DesignerTest {
     @Description("Этот тест проверяет функциональность успешного перехода по клику к разделу «Булки»")
     public void testCrossingBunSection() {
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        designerPage.crossingSaucesSectionButton(wait);
-        designerPage.crossingBunSectionButton(wait);
+        designerPage.crossingSaucesSectionButton();
+        designerPage.crossingBunSectionButton();
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='BurgerIngredients_ingredients__menuContainer__Xu3Mo']")));
+
+        assertTrue("Переход к разделу не успешен", designerPage.afterSuccessfulCrossingBun());
+
     }
 
     @Test
@@ -89,9 +105,9 @@ public class DesignerTest {
     @Description("Этот тест проверяет функциональность успешного перехода по клику к разделу «Соусы»")
     public void testCrossingSaucesSection() {
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        designerPage.crossingSaucesSectionButton(wait);
+        designerPage.crossingSaucesSectionButton();
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='BurgerIngredients_ingredients__menuContainer__Xu3Mo']")));
+        assertTrue("Переход к разделу не успешен", designerPage.afterSuccessfulCrossingSauces());
     }
 
     @Test
@@ -100,8 +116,8 @@ public class DesignerTest {
     @Description("Этот тест проверяет функциональность успешного перехода по клику к разделу «Начинки»")
     public void testCrossingFillingSection() {
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        designerPage.crossingFillingSectionButton(wait);
+        designerPage.crossingFillingSectionButton();
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@class='BurgerIngredients_ingredients__menuContainer__Xu3Mo']")));
+        assertTrue("Переход к разделу не успешен", designerPage.afterSuccessfulCrossingFilling());
     }
 }

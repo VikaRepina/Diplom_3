@@ -1,14 +1,18 @@
 package site.page.object;
 
+import io.qameta.allure.Step;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class LoginPage extends BasePage {
+    private final WebDriverWait wait;
     public LoginPage(WebDriver driver) {
         super(driver);
+        this.wait = new WebDriverWait(driver, 10);
     }
 
     private final By emailInput = By.xpath("//input[@class='text input__textfield text_type_main-default' and @name='name']");
@@ -23,7 +27,8 @@ public class LoginPage extends BasePage {
     private final By loginPasswordRecoveryForm = By.xpath("//a[@class='Auth_link__1fOlj' and @href='/login']");
     private final By afterSuccessfulLogin = By.xpath("//button[@class='button_button__33qZ0 button_button_type_primary__1O7Bx button_button_size_large__G21Vg']");
 
-    public void logInThroughLoginAccountButton(WebDriverWait wait, String email, String password) {
+    @Step("Вход через кнопку «Войти в аккаунт» на главной")
+    public void logInThroughLoginAccountButton(String email, String password) {
         WebElement logInAccountButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(logInAccountButton));
         logInAccountButtonLocator.click();
         driver.findElement(emailInput).sendKeys(email);
@@ -31,15 +36,28 @@ public class LoginPage extends BasePage {
         driver.findElement(logButton).click();
     }
 
-    public void logInThroughPersonalAccount(WebDriverWait wait, String email, String password) {
+    @Step("Подтверждение успешного входа")
+    public boolean afterSuccessfulLogin() {
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(afterSuccessfulLogin));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    @Step("Вход через кнопку «Личный кабинет»")
+    public void logInThroughPersonalAccount(String email, String password) {
         WebElement personalAccountButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(personalAccountButton));
         personalAccountButtonLocator.click();
         driver.findElement(emailInput).sendKeys(email);
         driver.findElement(passwordInput).sendKeys(password);
         driver.findElement(logButton).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(afterSuccessfulLogin));
     }
 
-    public void logInThroughRegistrationForm(WebDriverWait wait, String email, String password) {
+    @Step("Вход через кнопку в форме регистрации")
+    public void logInThroughRegistrationForm(String email, String password) {
         WebElement logInAccountButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(logInAccountButton));
         logInAccountButtonLocator.click();
         WebElement registrationButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(registrationButton));
@@ -50,9 +68,11 @@ public class LoginPage extends BasePage {
         driver.findElement(emailInput).sendKeys(email);
         driver.findElement(passwordInput).sendKeys(password);
         driver.findElement(logButton).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(afterSuccessfulLogin));
     }
 
-    public void logInThroughPasswordRecoveryForm(WebDriverWait wait, String email, String password) {
+    @Step("Вход через кнопку в форме восстановления пароля")
+    public void logInThroughPasswordRecoveryForm(String email, String password) {
         WebElement personalAccountButtonLocator = wait.until(ExpectedConditions.elementToBeClickable(personalAccountButton));
         personalAccountButtonLocator.click();
         WebElement passwordRecoveryFormLocator = wait.until(ExpectedConditions.elementToBeClickable(passwordRecoveryForm));
@@ -63,5 +83,6 @@ public class LoginPage extends BasePage {
         driver.findElement(emailInput).sendKeys(email);
         driver.findElement(passwordInput).sendKeys(password);
         driver.findElement(logButton).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(afterSuccessfulLogin));
     }
 }

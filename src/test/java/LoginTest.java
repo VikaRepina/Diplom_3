@@ -2,6 +2,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Description;
 import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.Response;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,46 +14,57 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import site.page.object.LoginApi;
 import site.page.object.LoginPage;
 import site.page.object.RegistrationPage;
+import site.page.object.User;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-@RunWith(Parameterized.class)
+import static org.junit.Assert.assertTrue;
+
+
 public class LoginTest {
     private WebDriver driver;
     private LoginPage loginPage;
-    private String browser;
+    private static String browser;
 
-    private static final String email = "tedetugr-data@yandex.ru";
-    private static final String password = "gsysydh";
-
-    public LoginTest(String browser) {
-        this.browser = browser;
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                { "chrome" },
-                { "yandex" }
-        });
-    }
+    private static final String email = "tedetugre-data@yandex.ru";
+    private static final String password = "gsysreydh";
+    private static final String name = "useeeeeeerrr";
+    private String Token;
 
 
     @Before
     @Step("Настройка драйвера")
     public void setup() {
-        if (browser.equals("chrome")) {
-            WebDriverManager.chromedriver().setup();
-            driver = new ChromeDriver();
-        } else if (browser.equals("yandex")) {
-            WebDriverManager.chromedriver().setup();
-            ChromeOptions options = new ChromeOptions();
-            options.setBinary("C:/Users/Виктория/AppData/Local/Yandex/YandexBrowser/Application/browser.exe"); // Укажите правильный путь к Yandex Browser
-            driver = new ChromeDriver(options);
+
+        browser = System.getenv("BROWSER");
+        if (browser == null || browser.isEmpty()) {
+            browser = "chrome";
         }
+
+        User user = new User(name, email, password);
+        LoginApi loginApi = new LoginApi();
+        Response response = loginApi.createUser(user);response.then().statusCode(200);
+        Token = response.jsonPath().get("accessToken");
+
+        switch (browser.toLowerCase()) {
+            case "chrome":
+                WebDriverManager.chromedriver().setup();
+                driver = new ChromeDriver();
+                break;
+            case "yandex":
+                WebDriverManager.chromedriver().setup();
+                ChromeOptions options = new ChromeOptions();
+                options.setBinary("C:/Users/Виктория/AppData/Local/Yandex/YandexBrowser/Application/browser.exe");
+                driver = new ChromeDriver(options);
+                break;
+            default:
+                throw new IllegalArgumentException("Неподдерживаемый браузер: " + browser);
+        }
+
         driver.get("https://stellarburgers.nomoreparties.site/");
         loginPage = new LoginPage(driver);
     }
@@ -63,6 +75,10 @@ public class LoginTest {
         if (driver != null) {
             driver.quit();
         }
+
+        LoginApi loginApi = new LoginApi();
+        Response responseSecond = loginApi.deleteUser(Token);
+        responseSecond.then().statusCode(202);
     }
 
     @Test
@@ -71,9 +87,10 @@ public class LoginTest {
     @Description("Этот тест проверяет функциональность успешного входа по кнопке «Войти в аккаунт» на главной")
     public void testLogInThroughLoginAccountButton() {
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        loginPage.logInThroughLoginAccountButton(wait, email, password);
+        loginPage.logInThroughLoginAccountButton(email, password);
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@class='button_button__33qZ0 button_button_type_primary__1O7Bx button_button_size_large__G21Vg']")));
+        assertTrue("Не успешеный вход в аккаунта", loginPage.afterSuccessfulLogin());
+
     }
 
     @Test
@@ -82,9 +99,9 @@ public class LoginTest {
     @Description("Этот тест проверяет функциональность успешного входа через кнопку «Личный кабинет»")
     public void testLogInThroughPersonalAccount() {
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        loginPage.logInThroughPersonalAccount(wait, email, password);
+        loginPage.logInThroughPersonalAccount(email, password);
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@class='button_button__33qZ0 button_button_type_primary__1O7Bx button_button_size_large__G21Vg']")));
+        assertTrue("Не успешеный вход в аккаунта", loginPage.afterSuccessfulLogin());
     }
 
     @Test
@@ -93,9 +110,9 @@ public class LoginTest {
     @Description("Этот тест проверяет функциональность успешного входа через кнопку в форме регистрации")
     public void testLogInThroughRegistrationForm() {
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        loginPage.logInThroughRegistrationForm(wait, email, password);
+        loginPage.logInThroughRegistrationForm(email, password);
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@class='button_button__33qZ0 button_button_type_primary__1O7Bx button_button_size_large__G21Vg']")));
+        assertTrue("Не успешеный вход в аккаунта", loginPage.afterSuccessfulLogin());
     }
 
     @Test
@@ -104,8 +121,8 @@ public class LoginTest {
     @Description("Этот тест проверяет функциональность успешного входа через кнопку в форме восстановления пароля")
     public void testLogInThroughPasswordRecoveryForm() {
         WebDriverWait wait = new WebDriverWait(driver, 10);
-        loginPage.logInThroughPasswordRecoveryForm(wait, email, password);
+        loginPage.logInThroughPasswordRecoveryForm(email, password);
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//button[@class='button_button__33qZ0 button_button_type_primary__1O7Bx button_button_size_large__G21Vg']")));
+        assertTrue("Не успешеный вход в аккаунта", loginPage.afterSuccessfulLogin());
     }
 }
