@@ -1,3 +1,4 @@
+import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Description;
 import io.qameta.allure.Step;
@@ -30,10 +31,18 @@ public class LoginTest {
     private LoginPage loginPage;
     private static String browser;
 
-    private static final String email = "tedetugre-data@yandex.ru";
-    private static final String password = "gsysreydh";
-    private static final String name = "useeeeeeerrr";
+    private static String name;
+    private static String email;
+    private static String password;
     private String Token;
+    private static final Faker faker = new Faker();
+
+    static {
+        Faker faker = new Faker();
+        name = faker.name().username();
+        email = faker.internet().emailAddress();
+        password = faker.internet().password();
+    }
 
 
     @Before
@@ -82,7 +91,6 @@ public class LoginTest {
     }
 
     @Test
-    @Step("Тест успешного входа по кнопке «Войти в аккаунт» на главной")
     @DisplayName("Test log in through login account button")
     @Description("Этот тест проверяет функциональность успешного входа по кнопке «Войти в аккаунт» на главной")
     public void testLogInThroughLoginAccountButton() {
@@ -94,7 +102,6 @@ public class LoginTest {
     }
 
     @Test
-    @Step("Тест успешного входа через кнопку «Личный кабинет»")
     @DisplayName("Test log in through personal account")
     @Description("Этот тест проверяет функциональность успешного входа через кнопку «Личный кабинет»")
     public void testLogInThroughPersonalAccount() {
@@ -105,7 +112,6 @@ public class LoginTest {
     }
 
     @Test
-    @Step("Тест успешного входа через кнопку в форме регистрации")
     @DisplayName("Test log in through registration form")
     @Description("Этот тест проверяет функциональность успешного входа через кнопку в форме регистрации")
     public void testLogInThroughRegistrationForm() {
@@ -116,7 +122,6 @@ public class LoginTest {
     }
 
     @Test
-    @Step("Тест успешного входа через кнопку в форме восстановления пароля")
     @DisplayName("Test log in through password recovery form")
     @Description("Этот тест проверяет функциональность успешного входа через кнопку в форме восстановления пароля")
     public void testLogInThroughPasswordRecoveryForm() {

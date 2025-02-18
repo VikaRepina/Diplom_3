@@ -1,3 +1,4 @@
+import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Step;
 import io.qameta.allure.junit4.DisplayName;
@@ -29,11 +30,20 @@ public class RegistrationUserTest {
     private RegistrationPage registrationPage;
     private static String browser;
 
-    private static final String email = "tedetugre-data@yandex.ru";
-    private static final String password = "gsysreydh";
-    private static final String name = "useeeeeeerrr";
-    private static final String passwordE = "user";
+    private static String name;
+    private static String email;
+    private static String password;
+    private static String passwordE;
     private String Token;
+    private static final Faker faker = new Faker();
+
+    static {
+        Faker faker = new Faker();
+        name = faker.name().username();
+        email = faker.internet().emailAddress();
+        password = faker.internet().password();
+        passwordE = faker.internet().password();
+    }
 
 
 
@@ -83,7 +93,6 @@ public class RegistrationUserTest {
     }
 
     @Test
-    @Step("Тест успешной регистрации пользователя")
     @DisplayName("Test successful registration")
     @Description("Этот тест проверяет функциональность успешной регистрации")
     public void testSuccessfulRegistration() {
@@ -94,7 +103,6 @@ public class RegistrationUserTest {
     }
 
     @Test
-    @Step("Тест регистрации неправильным паролем")
     @DisplayName("Test incorrect password registration")
     @Description("Этот тест проверяет регистрацию неправильным паролем")
     public void testIncorrectPasswordRegistration() {

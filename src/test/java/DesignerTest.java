@@ -1,3 +1,4 @@
+import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Description;
 import io.qameta.allure.Step;
@@ -29,10 +30,18 @@ public class DesignerTest {
     private LoginPage loginPage;
     private static String browser;
 
-    private static final String email = "tedetugre-data@yandex.ru";
-    private static final String password = "gsysreydh";
-    private static final String name = "useeeeeeerrr";
+    private static String name;
+    private static String email;
+    private static String password;
     private String Token;
+    private static final Faker faker = new Faker();
+
+    static {
+        Faker faker = new Faker();
+        name = faker.name().username();
+        email = faker.internet().emailAddress();
+        password = faker.internet().password();
+    }
 
 
     @Before
@@ -46,7 +55,8 @@ public class DesignerTest {
 
         User user = new User(name, email, password);
         LoginApi loginApi = new LoginApi();
-        Response response = loginApi.createUser(user);response.then().statusCode(200);
+        Response response = loginApi.createUser(user);
+        response.then().statusCode(200);
         Token = response.jsonPath().get("accessToken");
 
         switch (browser.toLowerCase()) {
@@ -86,7 +96,6 @@ public class DesignerTest {
     }
 
     @Test
-    @Step("Тест успешного перехода по клику к разделу «Булки»")
     @DisplayName("Test crossing bun section")
     @Description("Этот тест проверяет функциональность успешного перехода по клику к разделу «Булки»")
     public void testCrossingBunSection() {
@@ -100,7 +109,6 @@ public class DesignerTest {
     }
 
     @Test
-    @Step("Тест успешного перехода по клику к разделу «Соусы»")
     @DisplayName("Test crossing sauces section")
     @Description("Этот тест проверяет функциональность успешного перехода по клику к разделу «Соусы»")
     public void testCrossingSaucesSection() {
@@ -111,7 +119,6 @@ public class DesignerTest {
     }
 
     @Test
-    @Step("Тест успешного перехода по клику к разделу «Начинки»")
     @DisplayName("Test crossing filling section")
     @Description("Этот тест проверяет функциональность успешного перехода по клику к разделу «Начинки»")
     public void testCrossingFillingSection() {

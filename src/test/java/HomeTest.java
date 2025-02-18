@@ -1,3 +1,4 @@
+import com.github.javafaker.Faker;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Description;
 import io.qameta.allure.Step;
@@ -30,10 +31,18 @@ public class HomeTest {
     private LoginPage loginPage;
     private static String browser;
 
-    private static final String email = "tedetugre-data@yandex.ru";
-    private static final String password = "gsysreydh";
-    private static final String name = "useeeeeeerrr";
+    private static String name;
+    private static String email;
+    private static String password;
     private String Token;
+    private static final Faker faker = new Faker();
+
+    static {
+        Faker faker = new Faker();
+        name = faker.name().username();
+        email = faker.internet().emailAddress();
+        password = faker.internet().password();
+    }
 
 
 
@@ -87,7 +96,6 @@ public class HomeTest {
     }
 
     @Test
-    @Step("Тест успешного перехода по клику на «Личный кабинет»")
     @DisplayName("Test crossing log in account")
     @Description("Этот тест проверяет функциональность успешного перехода по клику на «Личный кабинет»")
     public void testCrossingLogInAccount() {
@@ -100,7 +108,6 @@ public class HomeTest {
     }
 
     @Test
-    @Step("Тест успешного перехода по клику на «Конструктор»")
     @DisplayName("Test crossing designer")
     @Description("Этот тест проверяет функциональность успешного перехода по клику на «Конструктор»")
     public void testCrossingDesigner() {
@@ -112,7 +119,6 @@ public class HomeTest {
     }
 
     @Test
-    @Step("Тест успешного перехода по клику на логотип Stellar Burgers")
     @DisplayName("Test crossing logo")
     @Description("Этот тест проверяет функциональность успешного перехода по клику на логотип Stellar Burgers")
     public void testCrossingLogo() {
@@ -124,7 +130,6 @@ public class HomeTest {
     }
 
     @Test
-    @Step("Тест успешного выхода из аккаунта")
     @DisplayName("Test exit from account")
     @Description("Этот тест проверяет функциональность выхода из аккаунта")
     public void testExitFromAccount() {
